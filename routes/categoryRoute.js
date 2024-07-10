@@ -1,8 +1,11 @@
 const express = require("express");
-const { getCategories } = require("../services/categoryService");
+const {
+  getCategories,
+  createCategory,
+} = require("../services/categoryService");
 const router = express.Router();
 
 //! Routes
-router.get("/", getCategories);
+router.route("/").get(getCategories).post(createCategory);
 
 module.exports = router;
