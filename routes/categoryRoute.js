@@ -3,6 +3,6 @@ const { createCategore } = require("../services/categoryService");
 const router = express.Router();
 
 //! Routes
-router.get("/", createCategore);
+router.post("/", createCategore);
 
 module.exports = router;
