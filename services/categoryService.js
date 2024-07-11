@@ -1,6 +1,6 @@
 const CategoryModel = require("../models/categoryModel");
 
-exports.getCategories = (req, res) => {
+exports.createCategore = (req, res) => {
   const name = req.body.name;
   console.log(req.body);
 
