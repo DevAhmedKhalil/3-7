@@ -66,3 +66,18 @@ exports.updateCategory = asyncHandler(async (req, res) => {
 
   res.status(200).json({ data: category });
 });
+
+// @desc      Delete category
+// @route     DELETE /api/v1/category/:id
+// @access    Private 'admin'
+exports.deleteCategory = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const category = await CategoryModel.findOneAndDelete({ _id: id });
+  if (!category)
+    return res
+      .status(404)
+      .json({ message: `No category found with this ID ${id}` });
+
+  res.status(204).send(); // No Content = deleted
+});
