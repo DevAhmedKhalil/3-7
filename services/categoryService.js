@@ -16,6 +16,19 @@ exports.getCategories = asyncHandler(async (req, res) => {
   res.status(200).json({ results: categories.length, page, data: categories });
 });
 
+// @desc      Get a specific category by id
+// @route     GET /api/v1/categories/:id
+// @access    Public 'anyone'
+exports.getCategory = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const category = await CategoryModel.findById(id);
+
+  if (!category)
+    return res.status(404).json({ message: "Category not found by this ID." });
+
+  res.status(200).json({ data: category });
+});
+
 // @desc      Create a new category
 // @route     POST /api/v1/category
 // @access    Private 'admin'
