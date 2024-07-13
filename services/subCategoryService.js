@@ -17,7 +17,12 @@ exports.createSubCategory = asyncHandler(async (req, res) => {
     category,
   });
 
-  res.status(201).json({ data: subCategory });
+  // Populate the category field in subCategory
+  const populatedSubCategory = await SubCategoryModel.findById(
+    subCategory._id
+  ).populate({ path: "category", select: "name" });
+
+  res.status(201).json({ data: populatedSubCategory });
 });
 
 // @desc      Get a list of subCategories
@@ -28,7 +33,13 @@ exports.getSubCategories = asyncHandler(async (req, res) => {
   const limit = req.query.limit * 1 || 5;
   const skip = (page - 1) * limit;
 
-  const subCategory = await SubCategoryModel.find({}).skip(skip).limit(limit);
+  const subCategory = await SubCategoryModel.find({})
+    .skip(skip)
+    .limit(limit)
+    .populate({
+      path: "category",
+      select: "name -_id",
+    });
 
   res
     .status(200)
@@ -40,13 +51,17 @@ exports.getSubCategories = asyncHandler(async (req, res) => {
 // @access    Public 'anyone'
 exports.getSubCategory = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
-  const subCategory = await SubCategoryModel.findById(id);
+  const subCategory = await SubCategoryModel.findById(id).populate({
+    path: "category",
+    select: "name",
+  });
 
   if (!subCategory)
     return next(new ApiError(`No subcategory found with this ID ${id}`, 404));
 
   res.status(200).json({ data: subCategory });
 });
+
 // @desc      Update subCategory
 // @route     PUT /api/v1/subcategory/:id
 // @access    Private 'admin'
@@ -67,7 +82,12 @@ exports.updateSubCategory = asyncHandler(async (req, res, next) => {
   if (!subCategory)
     return next(new ApiError(`No subcategory found with this ID ${id}`, 404));
 
-  res.status(200).json({ data: subCategory });
+  // Populate the category field in subCategory
+  const populatedSubCategory = await SubCategoryModel.findById(
+    subCategory._id
+  ).populate({ path: "category", select: "name" });
+
+  res.status(200).json({ data: populatedSubCategory });
 });
 
 // @desc      Delete subCategory
