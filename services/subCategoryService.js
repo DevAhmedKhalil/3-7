@@ -19,3 +19,66 @@ exports.createSubCategory = asyncHandler(async (req, res) => {
 
   res.status(201).json({ data: subCategory });
 });
+
+// @desc      Get a list of subCategories
+// @route     GET /api/v1/subcategories
+// @access    Public 'anyone'
+exports.getSubCategories = asyncHandler(async (req, res) => {
+  const page = req.query.page * 1 || 1;
+  const limit = req.query.limit * 1 || 5;
+  const skip = (page - 1) * limit;
+
+  const subCategory = await SubCategoryModel.find({}).skip(skip).limit(limit);
+
+  res
+    .status(200)
+    .json({ results: subCategory.length, page, data: subCategory });
+});
+
+// @desc      Get a specific subCategory by id
+// @route     GET /api/v1/subcategories/:id
+// @access    Public 'anyone'
+exports.getSubCategory = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+  const subCategory = await SubCategoryModel.findById(id);
+
+  if (!subCategory)
+    return next(new ApiError(`No subcategory found with this ID ${id}`, 404));
+
+  res.status(200).json({ data: subCategory });
+});
+// @desc      Update subCategory
+// @route     PUT /api/v1/subcategory/:id
+// @access    Private 'admin'
+exports.updateSubCategory = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+  const { name, category } = req.body;
+
+  // Find category by id and update with data from req.body
+  const subCategory = await SubCategoryModel.findOneAndUpdate(
+    { _id: id },
+    { name, slug: slugify(name), category },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+
+  if (!subCategory)
+    return next(new ApiError(`No subcategory found with this ID ${id}`, 404));
+
+  res.status(200).json({ data: subCategory });
+});
+
+// @desc      Delete subCategory
+// @route     DELETE /api/v1/subcategory/:id
+// @access    Private 'admin'
+exports.deleteSubCategory = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+
+  const subCategory = await SubCategoryModel.findOneAndDelete({ _id: id });
+  if (!subCategory)
+    return next(new ApiError(`No subcategory found with this ID ${id}`, 404));
+
+  res.status(204).send(); // No Content = deleted
+});
