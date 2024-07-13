@@ -7,6 +7,7 @@ const ApiError = require("./utils/ApiError");
 const globalError = require("./middlewares/errorMiddleware");
 const dbConnection = require("./config/database");
 const categoryRoute = require("./routes/categoryRoute");
+const subCategoryRoute = require("./routes/subCategoryRoute");
 
 //! Connection with db
 dbConnection();
@@ -26,6 +27,7 @@ if (process.env.NODE_ENV === "development") {
 
 //! Mount Routes
 app.use("/api/v1/categories", categoryRoute);
+app.use("/api/v1/subcategories", subCategoryRoute);
 
 //! Handling Unknown Routes
 app.all("*", (req, res, next) => {
