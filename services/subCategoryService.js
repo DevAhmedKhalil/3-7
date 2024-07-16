@@ -4,6 +4,14 @@ const ApiError = require("../utils/ApiError");
 
 const SubCategoryModel = require("../models/subCategoryModel");
 
+exports.setCategoryIdToBody = (req, res, next) => {
+  //@ for nested route
+  if (!req.body.category) {
+    req.body.category = req.params.categoryId;
+  }
+  next();
+};
+
 // @desc      Create a new subCategory
 // @route     POST /api/v1/subCategory
 // @access    Private 'admin'
@@ -25,6 +33,15 @@ exports.createSubCategory = asyncHandler(async (req, res) => {
   res.status(201).json({ data: populatedSubCategory });
 });
 
+exports.createFilterObj = (req, res, next) => {
+  let filteredObj = {};
+  if (req.params.categoryId) {
+    filteredObj = { category: req.params.categoryId };
+  }
+  req.filteredObj = filteredObj;
+  next();
+};
+
 // @desc      Get a list of subCategories
 // @route     GET /api/v1/subcategories
 // @access    Public 'anyone'
@@ -34,12 +51,7 @@ exports.getSubCategories = asyncHandler(async (req, res) => {
   const skip = (page - 1) * limit;
   // console.log(req.params.categoryId);
 
-  let filteredObj = {};
-  if (req.params.categoryId) {
-    filteredObj = { category: req.params.categoryId };
-  }
-
-  const subCategory = await SubCategoryModel.find(filteredObj)
+  const subCategory = await SubCategoryModel.find(req.filteredObj)
     .skip(skip)
     .limit(limit)
     .populate({
