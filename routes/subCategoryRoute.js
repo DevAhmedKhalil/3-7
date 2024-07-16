@@ -13,7 +13,9 @@ const {
   deleteSubCategory,
 } = require("../services/subCategoryService");
 
-const router = express.Router();
+// mergeParams: Allow us to merge parameters in other routers
+// ex: We need to access categoryId from category router
+const router = express.Router({ mergeParams: true });
 
 //! Routes
 router
