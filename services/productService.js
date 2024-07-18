@@ -15,7 +15,7 @@ exports.getProducts = asyncHandler(async (req, res) => {
   const products = await ProductModel.find({})
     .skip(skip)
     .limit(limit)
-    .populate("category subCategory brand", "name"); // Populate references
+    .populate("category", "name -_id");
 
   res.status(200).json({ results: products.length, page, data: products });
 });
@@ -25,10 +25,10 @@ exports.getProducts = asyncHandler(async (req, res) => {
 // @access    Public 'anyone'
 exports.getProduct = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
-  const product = await ProductModel.findById(id).populate(
-    "category subCategory brand",
-    "name"
-  ); // Populate references
+  const product = await ProductModel.findById(id).populate({
+    path: "category",
+    select: "name -_id",
+  });
 
   if (!product)
     return next(new ApiError(`No product found with this ID ${id}`, 404));
@@ -42,7 +42,12 @@ exports.getProduct = asyncHandler(async (req, res, next) => {
 exports.createProduct = asyncHandler(async (req, res) => {
   req.body.slug = slugify(req.body.title);
   const product = await ProductModel.create(req.body);
-  res.status(201).json({ data: product });
+
+  const populatedProduct = await ProductModel.findById(product._id).populate({
+    path: "category",
+    select: "name -_id",
+  });
+  res.status(201).json({ data: populatedProduct });
 });
 
 // @desc      Update product
@@ -61,7 +66,12 @@ exports.updateProduct = asyncHandler(async (req, res, next) => {
   if (!product)
     return next(new ApiError(`No product found with this ID ${id}`, 404));
 
-  res.status(200).json({ data: product });
+  const populatedProduct = await ProductModel.findById(product._id).populate({
+    path: "category",
+    select: "name -_id",
+  });
+
+  res.status(200).json({ data: populatedProduct });
 });
 
 // @desc      Delete product

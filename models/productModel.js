@@ -4,6 +4,7 @@ const productSchema = new mongoose.Schema(
   {
     title: {
       type: String,
+      unique: true,
       required: [true, "Title is required!"],
       trim: true,
       minlength: [3, "Title should not be less than 3 characters!"],
@@ -33,7 +34,7 @@ const productSchema = new mongoose.Schema(
       type: Number,
       required: [true, "Product Price is required!"],
       trim: true,
-      max: [20, "Too long Price should be less than 20 numbers!"],
+      max: [1000000, "Too long Price should be less than 20 numbers!"],
     },
     priceAfterDiscount: {
       type: Number,
@@ -61,7 +62,6 @@ const productSchema = new mongoose.Schema(
     },
     ratingsAverage: {
       type: Number,
-      default: 0,
       min: [1, "Rating must be at least 1"],
       max: [5, "Rating must be at most 5"],
     },
