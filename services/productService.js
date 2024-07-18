@@ -15,7 +15,7 @@ exports.getProducts = asyncHandler(async (req, res) => {
   const products = await ProductModel.find({})
     .skip(skip)
     .limit(limit)
-    .populate("category", "name -_id");
+    .populate("category subCategories", "name -_id");
 
   res.status(200).json({ results: products.length, page, data: products });
 });
@@ -26,7 +26,7 @@ exports.getProducts = asyncHandler(async (req, res) => {
 exports.getProduct = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
   const product = await ProductModel.findById(id).populate({
-    path: "category",
+    path: "category subCategories",
     select: "name -_id",
   });
 
@@ -44,7 +44,7 @@ exports.createProduct = asyncHandler(async (req, res) => {
   const product = await ProductModel.create(req.body);
 
   const populatedProduct = await ProductModel.findById(product._id).populate({
-    path: "category",
+    path: "category subCategories",
     select: "name -_id",
   });
   res.status(201).json({ data: populatedProduct });
@@ -67,7 +67,7 @@ exports.updateProduct = asyncHandler(async (req, res, next) => {
     return next(new ApiError(`No product found with this ID ${id}`, 404));
 
   const populatedProduct = await ProductModel.findById(product._id).populate({
-    path: "category",
+    path: "category subCategories",
     select: "name -_id",
   });
 
