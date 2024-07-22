@@ -78,9 +78,27 @@ exports.createProductValidator = [
         _id: { $exists: true, $in: subCategoriesIds },
       }).then((result) => {
         if (result.length < 1 || result.length !== subCategoriesIds.length) {
-          return Promise.reject(new Error(`Invalid subcategoryesIds`));
+          return Promise.reject(new Error(`Invalid subcategoriesIds`));
         }
       })
+    )
+    .custom((value, { req }) =>
+      SubCategoryModel.find({ category: req.body.category }).then(
+        (subcategories) => {
+          // console.log(subcategories.length);
+          const subCategoriesIdsInDB = [];
+          subcategories.forEach((subCategory) => {
+            subCategoriesIdsInDB.push(subCategory._id.toString());
+          });
+          //@ desc - ckecks if subCategories Ids in DB include subCategories in req.body - return (true OR false)
+          const checker = (target, arr) => target.every((v) => arr.includes(v));
+          if (!checker(value, subCategoriesIdsInDB)) {
+            return Promise.reject(
+              new Error(`subcategories not belong to category`)
+            );
+          }
+        }
+      )
     ),
 
   check("brand").optional().isMongoId().withMessage("Invalid brand ID format"),
