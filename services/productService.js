@@ -8,14 +8,31 @@ const ProductModel = require("../models/productModel");
 // @route     GET /api/v1/products
 // @access    Public 'anyone'
 exports.getProducts = asyncHandler(async (req, res) => {
+  //! Filtering
+  const queryObj = { ...req.query };
+  const excludedFields = ["page", "limit", "sort", "fields"];
+  excludedFields.forEach((el) => delete queryObj[el]);
+
+  console.log(req.query);
+  console.log(queryObj);
+
+  //! Pagination
   const page = req.query.page * 1 || 1;
   const limit = req.query.limit * 1 || 10;
   const skip = (page - 1) * limit;
 
-  const products = await ProductModel.find({})
+  //! Build a query
+  const mongooseQuery = ProductModel.find(queryObj)
+    // .where("price")
+    // .equals(req.query.price)
+    // .where("ratingsAverage")
+    // .equals(req.query.ratingsAverage)
     .skip(skip)
     .limit(limit)
     .populate("category subCategories", "name -_id");
+
+  //! Execute query
+  const products = await mongooseQuery;
 
   res.status(200).json({ results: products.length, page, data: products });
 });
