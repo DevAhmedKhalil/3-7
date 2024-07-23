@@ -16,6 +16,14 @@
     "no-undef": "error",
     "node/no-unsupported-features/es-syntax": "off",
     "prefer-destructuring": ["warn", { "object": true, "array": false }],
-    "no-unused-vars": ["warn", { "argsIgnorePattern": "req|res|next|val" }]
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "req|res|next|val" }],
+    "import/no-extraneous-dependencies": [
+      "false",
+      {
+        "devDependencies": false,
+        "optionalDependencies": false,
+        "peerDependencies": false
+      }
+    ]
   }
 }
