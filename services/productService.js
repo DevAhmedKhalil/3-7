@@ -10,7 +10,7 @@ const ProductModel = require("../models/productModel");
 exports.getProducts = asyncHandler(async (req, res) => {
   //! 1) Filtering
   const queryObj = { ...req.query };
-  const excludedFields = ["page", "limit", "sort", "fields"];
+  const excludedFields = ["page", "limit", "sort", "fields", "keyword"];
   excludedFields.forEach((el) => delete queryObj[el]);
 
   //! - Filtering with [<, <=, >, >=]
@@ -24,26 +24,37 @@ exports.getProducts = asyncHandler(async (req, res) => {
   const skip = (page - 1) * limit;
 
   //! Build a query
-  const mongooseQuery = ProductModel.find(JSON.parse(queryStr))
+  let mongooseQuery = ProductModel.find(JSON.parse(queryStr))
     .skip(skip)
     .limit(limit)
     .populate("category subCategories", "name -_id");
 
   //! 3) Sorting
   if (req.query.sort) {
-    const sortBy = req.query.sort.split(",").join(" "); // To remove , from req.query.sort [-sold,price => -sold price]
-    mongooseQuery.sort(sortBy);
+    const sortBy = req.query.sort.split(",").join(" ");
+    mongooseQuery = mongooseQuery.sort(sortBy);
   } else {
-    mongooseQuery.sort("-createdAt");
+    mongooseQuery = mongooseQuery.sort("-createdAt");
   }
 
   //! 4) Fields Limiting
   if (req.query.fields) {
-    // To remove , from req.query.fields === title,ratingsAverage,imageCover,price,-_id ==> title ratingsAverage imageCover price -_id
     const fields = req.query.fields.split(",").join(" ");
-    mongooseQuery.select(fields);
+    mongooseQuery = mongooseQuery.select(fields);
   } else {
-    mongooseQuery.select("-__v");
+    mongooseQuery = mongooseQuery.select("-__v");
+  }
+
+  //! 5) Searching
+  if (req.query.keyword) {
+    let query = {};
+    // It searches for keyword within title and description using a 'regular expression'.
+    // The i option ensures case-insensitive search.
+    query.$or = [
+      { title: { $regex: req.query.keyword, $options: "i" } },
+      { description: { $regex: req.query.keyword, $options: "i" } },
+    ];
+    mongooseQuery = mongooseQuery.find(query);
   }
 
   //! Execute query
