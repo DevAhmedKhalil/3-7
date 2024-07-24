@@ -8,28 +8,39 @@ const ProductModel = require("../models/productModel");
 // @route     GET /api/v1/products
 // @access    Public 'anyone'
 exports.getProducts = asyncHandler(async (req, res) => {
-  //! Filtering
+  //! 1) Filtering
   const queryObj = { ...req.query };
   const excludedFields = ["page", "limit", "sort", "fields"];
   excludedFields.forEach((el) => delete queryObj[el]);
 
-  console.log(req.query);
-  console.log(queryObj);
+  //! - Filtering with [<, <=, >, >=]
+  let queryStr = JSON.stringify(queryObj);
+  queryStr = queryStr.replace(/\b(lt|lte|gt|gte)\b/g, (match) => `$${match}`);
 
-  //! Pagination
+  // console.log(queryObj); // { price: { gte: '50' }, ratingsAverage: { gte: '4' } }
+  // console.log(queryStr); // String {"price":{"$gte":"50"},"ratingsAverage":{"$gte":"4"}}
+  // console.log(JSON.parse(queryStr)); // JSON { price: { '$gte': '50' }, ratingsAverage: { '$gte': '4' } }
+
+  //! 2) Pagination
   const page = req.query.page * 1 || 1;
   const limit = req.query.limit * 1 || 10;
   const skip = (page - 1) * limit;
 
   //! Build a query
-  const mongooseQuery = ProductModel.find(queryObj)
-    // .where("price")
-    // .equals(req.query.price)
-    // .where("ratingsAverage")
-    // .equals(req.query.ratingsAverage)
+  const mongooseQuery = ProductModel.find(JSON.parse(queryStr))
     .skip(skip)
     .limit(limit)
     .populate("category subCategories", "name -_id");
+
+  //! 3) Sorting
+  if (req.query.sort) {
+    // console.log(req.query.sort); // -sold,price
+    const sortBy = req.query.sort.split(",").join(" ");
+    // console.log(sortBy); // -sold price
+    mongooseQuery.sort(sortBy);
+  } else {
+    mongooseQuery.sort("-createdAt");
+  }
 
   //! Execute query
   const products = await mongooseQuery;
