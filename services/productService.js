@@ -14,12 +14,9 @@ exports.getProducts = asyncHandler(async (req, res) => {
   excludedFields.forEach((el) => delete queryObj[el]);
 
   //! - Filtering with [<, <=, >, >=]
+  // To add $ before (lt|lte|gt|gte) ===> price: { gte: '50' } => price: { '$gte': '50' }
   let queryStr = JSON.stringify(queryObj);
   queryStr = queryStr.replace(/\b(lt|lte|gt|gte)\b/g, (match) => `$${match}`);
-
-  // console.log(queryObj); // { price: { gte: '50' }, ratingsAverage: { gte: '4' } }
-  // console.log(queryStr); // String {"price":{"$gte":"50"},"ratingsAverage":{"$gte":"4"}}
-  // console.log(JSON.parse(queryStr)); // JSON { price: { '$gte': '50' }, ratingsAverage: { '$gte': '4' } }
 
   //! 2) Pagination
   const page = req.query.page * 1 || 1;
@@ -34,12 +31,19 @@ exports.getProducts = asyncHandler(async (req, res) => {
 
   //! 3) Sorting
   if (req.query.sort) {
-    // console.log(req.query.sort); // -sold,price
-    const sortBy = req.query.sort.split(",").join(" ");
-    // console.log(sortBy); // -sold price
+    const sortBy = req.query.sort.split(",").join(" "); // To remove , from req.query.sort [-sold,price => -sold price]
     mongooseQuery.sort(sortBy);
   } else {
     mongooseQuery.sort("-createdAt");
+  }
+
+  //! 4) Fields Limiting
+  if (req.query.fields) {
+    // To remove , from req.query.fields === title,ratingsAverage,imageCover,price,-_id ==> title ratingsAverage imageCover price -_id
+    const fields = req.query.fields.split(",").join(" ");
+    mongooseQuery.select(fields);
+  } else {
+    mongooseQuery.select("-__v");
   }
 
   //! Execute query
