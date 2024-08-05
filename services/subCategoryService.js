@@ -87,43 +87,33 @@ exports.getSubCategory = asyncHandler(async (req, res, next) => {
 // @desc      Update subCategory
 // @route     PUT /api/v1/subcategory/:id
 // @access    Private 'admin'
-exports.updateSubCategory = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
-  const { name, category } = req.body;
+exports.updateSubCategory = Factory.updateOne(SubCategoryModel);
+// exports.updateSubCategory = asyncHandler(async (req, res, next) => {
+//   const { id } = req.params;
+//   const { name, category } = req.body;
 
-  // Find category by id and update with data from req.body
-  const subCategory = await SubCategoryModel.findOneAndUpdate(
-    { _id: id },
-    { name, slug: slugify(name), category },
-    {
-      new: true,
-      runValidators: true,
-    }
-  );
+//   // Find category by id and update with data from req.body
+//   const subCategory = await SubCategoryModel.findOneAndUpdate(
+//     { _id: id },
+//     { name, slug: slugify(name), category },
+//     {
+//       new: true,
+//       runValidators: true,
+//     }
+//   );
 
-  if (!subCategory)
-    return next(new ApiError(`No subcategory found with this ID ${id}`, 404));
+//   if (!subCategory)
+//     return next(new ApiError(`No subcategory found with this ID ${id}`, 404));
 
-  // Populate the category field in subCategory
-  const populatedSubCategory = await SubCategoryModel.findById(
-    subCategory._id
-  ).populate({ path: "category", select: "name" });
+//   // Populate the category field in subCategory
+//   const populatedSubCategory = await SubCategoryModel.findById(
+//     subCategory._id
+//   ).populate({ path: "category", select: "name" });
 
-  res.status(200).json({ data: populatedSubCategory });
-});
+//   res.status(200).json({ data: populatedSubCategory });
+// });
 
 // @desc      Delete subCategory
 // @route     DELETE /api/v1/subcategory/:id
 // @access    Private 'admin'
-
 exports.deleteSubCategory = Factory.deleteOne(SubCategoryModel);
-
-// exports.deleteSubCategory = asyncHandler(async (req, res, next) => {
-//   const { id } = req.params;
-
-//   const subCategory = await SubCategoryModel.findOneAndDelete({ _id: id });
-//   if (!subCategory)
-//     return next(new ApiError(`No subcategory found with this ID ${id}`, 404));
-
-//   res.status(204).send(); // No Content = deleted
-// });

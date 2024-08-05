@@ -56,38 +56,28 @@ exports.createCategory = asyncHandler(async (req, res) => {
 // @desc      Update category
 // @route     PUT /api/v1/category/:id
 // @access    Private 'admin'
-exports.updateCategory = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
-  const { name } = req.body;
+exports.updateCategory = Factory.updateOne(CategoryModel);
+// exports.updateCategory = asyncHandler(async (req, res, next) => {
+//   const { id } = req.params;
+//   const { name } = req.body;
 
-  // Find category by id and update with data from req.body
-  const category = await CategoryModel.findOneAndUpdate(
-    { _id: id },
-    { name, slug: slugify(name) },
-    {
-      new: true,
-      runValidators: true,
-    }
-  );
+//   // Find category by id and update with data from req.body
+//   const category = await CategoryModel.findOneAndUpdate(
+//     { _id: id },
+//     { name, slug: slugify(name) },
+//     {
+//       new: true,
+//       runValidators: true,
+//     }
+//   );
 
-  if (!category)
-    return next(new ApiError(`No category found with this ID ${id}`, 404));
+//   if (!category)
+//     return next(new ApiError(`No category found with this ID ${id}`, 404));
 
-  res.status(200).json({ data: category });
-});
+//   res.status(200).json({ data: category });
+// });
 
 // @desc      Delete category
 // @route     DELETE /api/v1/category/:id
 // @access    Private 'admin'
-
 exports.deleteCategory = Factory.deleteOne(CategoryModel);
-
-// exports.deleteCategory = asyncHandler(async (req, res, next) => {
-//   const { id } = req.params;
-
-//   const category = await CategoryModel.findOneAndDelete({ _id: id });
-//   if (!category)
-//     return next(new ApiError(`No category found with this ID ${id}`, 404));
-
-//   res.status(204).send(); // No Content = deleted
-// });

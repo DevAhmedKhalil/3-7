@@ -56,38 +56,23 @@ exports.createBrand = asyncHandler(async (req, res) => {
 // @desc      Update category
 // @route     PUT /api/v1/brands/:id
 // @access    Private 'admin'
-exports.updateBrand = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
-  const { name } = req.body;
+exports.updateBrand = Factory.updateOne(BrandModel);
+// exports.updateBrand = asyncHandler(async (req, res, next) => {
+//   // Find category by id and update with data from req.body
+//   const brand = await BrandModel.findByIdAndUpdate(req.params.id, req.body, {
+//     new: true,
+//     runValidators: true,
+//   });
 
-  // Find category by id and update with data from req.body
-  const brand = await BrandModel.findOneAndUpdate(
-    { _id: id },
-    { name, slug: slugify(name) },
-    {
-      new: true,
-      runValidators: true,
-    }
-  );
+//   if (!brand)
+//     return next(
+//       new ApiError(`No category found with this ID ${req.params.id}`, 404)
+//     );
 
-  if (!brand)
-    return next(new ApiError(`No category found with this ID ${id}`, 404));
-
-  res.status(200).json({ data: brand });
-});
+//   res.status(200).json({ data: brand });
+// });
 
 // @desc      Delete brand
 // @route     DELETE /api/v1/brands/:id
 // @access    Private 'admin'
-
 exports.deleteBrand = Factory.deleteOne(BrandModel);
-
-// exports.deleteBrand = asyncHandler(async (req, res, next) => {
-//   const { id } = req.params;
-
-//   const brand = await BrandModel.findOneAndDelete({ _id: id });
-//   if (!brand)
-//     return next(new ApiError(`No brand found with this ID ${id}`, 404));
-
-//   res.status(204).send(); // No Content = deleted
-// });

@@ -12,3 +12,19 @@ exports.deleteOne = (Model) =>
 
     res.status(204).send(); // No Content = deleted
   });
+
+exports.updateOne = (Model) =>
+  asyncHandler(async (req, res, next) => {
+    // Find category by id and update with data from req.body
+    const document = await Model.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!document)
+      return next(
+        new ApiError(`No document found with this ID ${req.params.id}`, 404)
+      );
+
+    res.status(200).json({ data: document });
+  });
