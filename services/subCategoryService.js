@@ -2,6 +2,7 @@ const slugify = require("slugify");
 const asyncHandler = require("express-async-handler");
 const ApiError = require("../utils/apiError");
 const ApiFeatures = require("../utils/apiFeatures");
+const Factory = require("./handlersFactory");
 
 const SubCategoryModel = require("../models/subCategoryModel");
 
@@ -114,12 +115,15 @@ exports.updateSubCategory = asyncHandler(async (req, res, next) => {
 // @desc      Delete subCategory
 // @route     DELETE /api/v1/subcategory/:id
 // @access    Private 'admin'
-exports.deleteSubCategory = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
 
-  const subCategory = await SubCategoryModel.findOneAndDelete({ _id: id });
-  if (!subCategory)
-    return next(new ApiError(`No subcategory found with this ID ${id}`, 404));
+exports.deleteSubCategory = Factory.deleteOne(SubCategoryModel);
 
-  res.status(204).send(); // No Content = deleted
-});
+// exports.deleteSubCategory = asyncHandler(async (req, res, next) => {
+//   const { id } = req.params;
+
+//   const subCategory = await SubCategoryModel.findOneAndDelete({ _id: id });
+//   if (!subCategory)
+//     return next(new ApiError(`No subcategory found with this ID ${id}`, 404));
+
+//   res.status(204).send(); // No Content = deleted
+// });

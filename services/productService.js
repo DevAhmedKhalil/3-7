@@ -2,6 +2,7 @@ const slugify = require("slugify");
 const asyncHandler = require("express-async-handler");
 const ApiError = require("../utils/apiError");
 const ApiFeatures = require("../utils/apiFeatures");
+const Factory = require("./handlersFactory");
 
 const ProductModel = require("../models/productModel");
 
@@ -52,7 +53,7 @@ exports.createProduct = asyncHandler(async (req, res) => {
   const product = await ProductModel.create(req.body);
 
   const populatedProduct = await ProductModel.findById(product._id).populate({
-    path: "category subCategories",
+    path: "category",
     select: "name -_id",
   });
   res.status(201).json({ data: populatedProduct });
@@ -85,12 +86,15 @@ exports.updateProduct = asyncHandler(async (req, res, next) => {
 // @desc      Delete product
 // @route     DELETE /api/v1/products/:id
 // @access    Private 'admin'
-exports.deleteProduct = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
 
-  const product = await ProductModel.findOneAndDelete({ _id: id });
-  if (!product)
-    return next(new ApiError(`No product found with this ID ${id}`, 404));
+exports.deleteProduct = Factory.deleteOne(ProductModel);
 
-  res.status(204).send(); // No Content = deleted
-});
+// exports.deleteProduct = asyncHandler(async (req, res, next) => {
+//   const { id } = req.params;
+
+//   const product = await ProductModel.findOneAndDelete({ _id: id });
+//   if (!product)
+//     return next(new ApiError(`No product found with this ID ${id}`, 404));
+
+//   res.status(204).send(); // No Content = deleted
+// });

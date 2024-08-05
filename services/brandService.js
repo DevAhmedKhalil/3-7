@@ -2,6 +2,7 @@ const slugify = require("slugify");
 const asyncHandler = require("express-async-handler");
 const ApiError = require("../utils/apiError");
 const ApiFeatures = require("../utils/apiFeatures");
+const Factory = require("./handlersFactory");
 
 const BrandModel = require("../models/brandModel");
 
@@ -78,12 +79,15 @@ exports.updateBrand = asyncHandler(async (req, res, next) => {
 // @desc      Delete brand
 // @route     DELETE /api/v1/brands/:id
 // @access    Private 'admin'
-exports.deleteBrand = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
 
-  const brand = await BrandModel.findOneAndDelete({ _id: id });
-  if (!brand)
-    return next(new ApiError(`No brand found with this ID ${id}`, 404));
+exports.deleteBrand = Factory.deleteOne(BrandModel);
 
-  res.status(204).send(); // No Content = deleted
-});
+// exports.deleteBrand = asyncHandler(async (req, res, next) => {
+//   const { id } = req.params;
+
+//   const brand = await BrandModel.findOneAndDelete({ _id: id });
+//   if (!brand)
+//     return next(new ApiError(`No brand found with this ID ${id}`, 404));
+
+//   res.status(204).send(); // No Content = deleted
+// });
