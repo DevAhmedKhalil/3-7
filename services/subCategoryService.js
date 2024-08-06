@@ -23,29 +23,6 @@ exports.createFilterObj = (req, res, next) => {
 // @route     GET /api/v1/subcategories
 // @access    Public 'anyone'
 exports.getSubCategories = Factory.getAll(SubCategoryModel);
-// exports.getSubCategories = asyncHandler(async (req, res) => {
-//   //! Build a query
-//   const countDocuments = await SubCategoryModel.countDocuments();
-//   const apiFeatures = new ApiFeatures(
-//     SubCategoryModel.find(req.filteredObj), //! it is missing
-//     req.query
-//   )
-//     .paginate(countDocuments)
-//     .filter()
-//     .sort()
-//     .limitFields()
-//     .search();
-
-//   //! Execute query
-//   const { mongooseQuery, paginationResult } = apiFeatures;
-//   const subcategories = await mongooseQuery;
-
-//   res.status(200).json({
-//     results: subcategories.length,
-//     paginationResult,
-//     data: subcategories,
-//   });
-// });
 
 // @desc      Get a specific subCategory by id
 // @route     GET /api/v1/subcategories/:id

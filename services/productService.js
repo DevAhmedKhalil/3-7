@@ -5,25 +5,6 @@ const ProductModel = require("../models/productModel");
 // @route     GET /api/v1/products
 // @access    Public 'anyone'
 exports.getProducts = Factory.getAll(ProductModel, "Products");
-// exports.getProducts = asyncHandler(async (req, res) => {
-//   //! Build a query
-//   const countDocuments = await ProductModel.countDocuments();
-
-//   const apiFeatures = new ApiFeatures(ProductModel.find(), req.query)
-//     .paginate(countDocuments)
-//     .filter()
-//     .sort()
-//     .limitFields()
-//     .search("Products");
-
-//   //! Execute query
-//   const { mongooseQuery, paginationResult } = apiFeatures;
-//   const products = await mongooseQuery;
-
-//   res
-//     .status(200)
-//     .json({ results: products.length, paginationResult, data: products });
-// });
 
 // @desc      Get a specific product by id
 // @route     GET /api/v1/products/:id

@@ -5,25 +5,6 @@ const CategoryModel = require("../models/categoryModel");
 // @route     GET /api/v1/categories
 // @access    Public 'anyone'
 exports.getCategories = Factory.getAll(CategoryModel);
-// exports.getCategories = asyncHandler(async (req, res) => {
-//   //! Build a query
-//   const countDocuments = await CategoryModel.countDocuments();
-
-//   const apiFeatures = new ApiFeatures(CategoryModel.find(), req.query)
-//     .paginate(countDocuments)
-//     .filter()
-//     .sort()
-//     .limitFields()
-//     .search();
-
-//   //! Execute query
-//   const { mongooseQuery, paginationResult } = apiFeatures;
-//   const categories = await mongooseQuery;
-
-//   res
-//     .status(200)
-//     .json({ results: categories.length, paginationResult, data: categories });
-// });
 
 // @desc      Get a specific category by id
 // @route     GET /api/v1/categories/:id

@@ -5,25 +5,6 @@ const BrandModel = require("../models/brandModel");
 // @route     GET /api/v1/brands
 // @access    Public 'anyone'
 exports.getBrands = Factory.getAll(BrandModel);
-// exports.getBrands = asyncHandler(async (req, res) => {
-//   //! Build a query
-//   const countDocuments = await BrandModel.countDocuments();
-
-//   const apiFeatures = new ApiFeatures(BrandModel.find(), req.query)
-//     .paginate(countDocuments)
-//     .filter()
-//     .sort()
-//     .limitFields()
-//     .search();
-
-//   //! Execute query
-//   const { mongooseQuery, paginationResult } = apiFeatures;
-//   const brands = await mongooseQuery;
-
-//   res
-//     .status(200)
-//     .json({ results: brands.length, paginationResult, data: brands });
-// });
 
 // @desc      Get a specific brand by id
 // @route     GET /api/v1/brands/:id
