@@ -72,4 +72,15 @@ const productSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Mongoose query middleware
+productSchema.pre(/^find/, function (next) {
+  // 'this' refers to the query object, it allows you to modify the query before it is sent to the database.
+  this.populate({
+    path: "category",
+    select: "name",
+  });
+
+  next();
+});
+
 module.exports = mongoose.model("Product", productSchema);
