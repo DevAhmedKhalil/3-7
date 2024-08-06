@@ -10,8 +10,11 @@ exports.createProductValidator = [
     .notEmpty()
     .withMessage("Title is required")
     .isLength({ min: 3, max: 100 })
-    .withMessage("Title should be between 3 and 100 characters"),
-
+    .withMessage("Title should be between 3 and 100 characters")
+    .custom((val, { req }) => {
+      req.body.slug = slugify(val);
+      return true;
+    }),
   check("description")
     .notEmpty()
     .withMessage("Product Description is required")

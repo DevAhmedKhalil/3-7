@@ -14,27 +14,6 @@ exports.setCategoryIdToBody = (req, res, next) => {
   next();
 };
 
-// @desc      Create a new subCategory
-// @route     POST /api/v1/subCategory
-// @access    Private 'admin'
-exports.createSubCategory = asyncHandler(async (req, res) => {
-  const { name, category } = req.body;
-  console.log(`name: ${name}`);
-
-  const subCategory = await SubCategoryModel.create({
-    name,
-    slug: slugify(name),
-    category,
-  });
-
-  // Populate the category field in subCategory
-  const populatedSubCategory = await SubCategoryModel.findById(
-    subCategory._id
-  ).populate({ path: "category", select: "name" });
-
-  res.status(201).json({ data: populatedSubCategory });
-});
-
 exports.createFilterObj = (req, res, next) => {
   let filteredObj = {};
   if (req.params.categoryId) {
@@ -84,34 +63,32 @@ exports.getSubCategory = asyncHandler(async (req, res, next) => {
   res.status(200).json({ data: subCategory });
 });
 
-// @desc      Update subCategory
-// @route     PUT /api/v1/subcategory/:id
+// @desc      Create a new subCategory
+// @route     POST /api/v1/subCategory
 // @access    Private 'admin'
-exports.updateSubCategory = Factory.updateOne(SubCategoryModel);
-// exports.updateSubCategory = asyncHandler(async (req, res, next) => {
-//   const { id } = req.params;
+exports.createSubCategory = Factory.createOne(SubCategoryModel);
+// exports.createSubCategory = asyncHandler(async (req, res) => {
 //   const { name, category } = req.body;
+//   console.log(`name: ${name}`);
 
-//   // Find category by id and update with data from req.body
-//   const subCategory = await SubCategoryModel.findOneAndUpdate(
-//     { _id: id },
-//     { name, slug: slugify(name), category },
-//     {
-//       new: true,
-//       runValidators: true,
-//     }
-//   );
-
-//   if (!subCategory)
-//     return next(new ApiError(`No subcategory found with this ID ${id}`, 404));
+//   const subCategory = await SubCategoryModel.create({
+//     name,
+//     slug: slugify(name),
+//     category,
+//   });
 
 //   // Populate the category field in subCategory
 //   const populatedSubCategory = await SubCategoryModel.findById(
 //     subCategory._id
 //   ).populate({ path: "category", select: "name" });
 
-//   res.status(200).json({ data: populatedSubCategory });
+//   res.status(201).json({ data: populatedSubCategory });
 // });
+
+// @desc      Update subCategory
+// @route     PUT /api/v1/subcategory/:id
+// @access    Private 'admin'
+exports.updateSubCategory = Factory.updateOne(SubCategoryModel);
 
 // @desc      Delete subCategory
 // @route     DELETE /api/v1/subcategory/:id

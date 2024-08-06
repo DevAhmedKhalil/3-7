@@ -45,32 +45,19 @@ exports.getBrand = asyncHandler(async (req, res, next) => {
 // @desc      Create a new brand
 // @route     POST /api/v1/brands
 // @access    Private 'admin'
-exports.createBrand = asyncHandler(async (req, res) => {
-  const { name } = req.body;
-  console.log(`name: ${name}`);
+exports.createBrand = Factory.createOne(BrandModel);
+// exports.createBrand = asyncHandler(async (req, res) => {
+//   const { name } = req.body;
+//   console.log(`name: ${name}`);
 
-  const category = await BrandModel.create({ name, slug: slugify(name) });
-  res.status(201).json({ data: category });
-});
+//   const category = await BrandModel.create({ name, slug: slugify(name) });
+//   res.status(201).json({ data: category });
+// });
 
 // @desc      Update category
 // @route     PUT /api/v1/brands/:id
 // @access    Private 'admin'
 exports.updateBrand = Factory.updateOne(BrandModel);
-// exports.updateBrand = asyncHandler(async (req, res, next) => {
-//   // Find category by id and update with data from req.body
-//   const brand = await BrandModel.findByIdAndUpdate(req.params.id, req.body, {
-//     new: true,
-//     runValidators: true,
-//   });
-
-//   if (!brand)
-//     return next(
-//       new ApiError(`No category found with this ID ${req.params.id}`, 404)
-//     );
-
-//   res.status(200).json({ data: brand });
-// });
 
 // @desc      Delete brand
 // @route     DELETE /api/v1/brands/:id
