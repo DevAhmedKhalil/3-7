@@ -46,3 +46,28 @@ exports.getOne = (Model) =>
 
     res.status(200).json({ data: document });
   });
+
+exports.getAll = (Model, modelName = "") =>
+  asyncHandler(async (req, res) => {
+    let filter = {};
+    if (req.filteredObj) {
+      filter = req.filteredObj;
+    }
+    //! Build a query
+    const countDocuments = await Model.countDocuments();
+
+    const apiFeatures = new ApiFeatures(Model.find(filter), req.query)
+      .paginate(countDocuments)
+      .filter()
+      .sort()
+      .limitFields()
+      .search(modelName);
+
+    //! Execute query
+    const { mongooseQuery, paginationResult } = apiFeatures;
+    const documents = await mongooseQuery;
+
+    res
+      .status(200)
+      .json({ results: documents.length, paginationResult, data: documents });
+  });
