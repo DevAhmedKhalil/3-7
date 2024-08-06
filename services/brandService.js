@@ -32,27 +32,21 @@ exports.getBrands = asyncHandler(async (req, res) => {
 // @desc      Get a specific brand by id
 // @route     GET /api/v1/brands/:id
 // @access    Public 'anyone'
-exports.getBrand = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
-  const brand = await BrandModel.findById(id);
+exports.getBrand = Factory.getOne(BrandModel);
+// exports.getBrand = asyncHandler(async (req, res, next) => {
+//   const { id } = req.params;
+//   const brand = await BrandModel.findById(id);
 
-  if (!brand)
-    return next(new ApiError(`No brand found with this ID ${id}`, 404));
+//   if (!brand)
+//     return next(new ApiError(`No brand found with this ID ${id}`, 404));
 
-  res.status(200).json({ data: brand });
-});
+//   res.status(200).json({ data: brand });
+// });
 
 // @desc      Create a new brand
 // @route     POST /api/v1/brands
 // @access    Private 'admin'
 exports.createBrand = Factory.createOne(BrandModel);
-// exports.createBrand = asyncHandler(async (req, res) => {
-//   const { name } = req.body;
-//   console.log(`name: ${name}`);
-
-//   const category = await BrandModel.create({ name, slug: slugify(name) });
-//   res.status(201).json({ data: category });
-// });
 
 // @desc      Update category
 // @route     PUT /api/v1/brands/:id

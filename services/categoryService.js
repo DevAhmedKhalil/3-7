@@ -32,27 +32,21 @@ exports.getCategories = asyncHandler(async (req, res) => {
 // @desc      Get a specific category by id
 // @route     GET /api/v1/categories/:id
 // @access    Public 'anyone'
-exports.getCategory = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
-  const category = await CategoryModel.findById(id);
+exports.getCategory = Factory.getOne(CategoryModel);
+// exports.getCategory = asyncHandler(async (req, res, next) => {
+//   const { id } = req.params;
+//   const category = await CategoryModel.findById(id);
 
-  if (!category)
-    return next(new ApiError(`No category found with this ID ${id}`, 404));
+//   if (!category)
+//     return next(new ApiError(`No category found with this ID ${id}`, 404));
 
-  res.status(200).json({ data: category });
-});
+//   res.status(200).json({ data: category });
+// });
 
 // @desc      Create a new category
 // @route     POST /api/v1/category
 // @access    Private 'admin'
 exports.createCategory = Factory.createOne(CategoryModel);
-// exports.createCategory = asyncHandler(async (req, res) => {
-//   const { name } = req.body;
-//   console.log(`name: ${name}`);
-
-//   const category = await CategoryModel.create({ name, slug: slugify(name) });
-//   res.status(201).json({ data: category });
-// });
 
 // @desc      Update category
 // @route     PUT /api/v1/category/:id

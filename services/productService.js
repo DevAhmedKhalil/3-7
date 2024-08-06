@@ -32,33 +32,24 @@ exports.getProducts = asyncHandler(async (req, res) => {
 // @desc      Get a specific product by id
 // @route     GET /api/v1/products/:id
 // @access    Public 'anyone'
-exports.getProduct = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
-  const product = await ProductModel.findById(id).populate({
-    path: "category subCategories",
-    select: "name -_id",
-  });
+exports.getProduct = Factory.getOne(ProductModel);
+// exports.getProduct = asyncHandler(async (req, res, next) => {
+//   const { id } = req.params;
+//   const product = await ProductModel.findById(id).populate({
+//     path: "category subCategories",
+//     select: "name -_id",
+//   });
 
-  if (!product)
-    return next(new ApiError(`No product found with this ID ${id}`, 404));
+//   if (!product)
+//     return next(new ApiError(`No product found with this ID ${id}`, 404));
 
-  res.status(200).json({ data: product });
-});
+//   res.status(200).json({ data: product });
+// });
 
 // @desc      Create a new product
 // @route     POST /api/v1/products
 // @access    Private 'admin'
 exports.createProduct = Factory.createOne(ProductModel);
-// exports.createProduct = asyncHandler(async (req, res) => {
-//   req.body.slug = slugify(req.body.title);
-//   const product = await ProductModel.create(req.body);
-
-//   const populatedProduct = await ProductModel.findById(product._id).populate({
-//     path: "category",
-//     select: "name -_id",
-//   });
-//   res.status(201).json({ data: populatedProduct });
-// });
 
 // @desc      Update product
 // @route     PUT /api/v1/products/:id
