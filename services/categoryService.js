@@ -6,6 +6,7 @@ const asyncHandle = require("express-async-handler");
 const Factory = require("./handlersFactory");
 const CategoryModel = require("../models/categoryModel");
 const ApiError = require("../utils/apiError");
+const { default: slugify } = require("slugify");
 
 // //! 1- Disk Storage Engine
 // const multerStorage = multer.diskStorage({
@@ -20,7 +21,7 @@ const ApiError = require("../utils/apiError");
 // });
 
 //! 2- Memory Storage Engine
-const multerStorage = multer.memoryStorage();
+const multerStorage = multer.memoryStorage(); // memoryStorage Has Buffer
 
 const multerFilter = (req, file, cb) => {
   if (file.mimetype.startsWith("image/")) {
@@ -31,16 +32,22 @@ const multerFilter = (req, file, cb) => {
 };
 
 const upload = multer({ storage: multerStorage, fileFilter: multerFilter });
+
 exports.uploadCategoryImage = upload.single("image");
 
 //! Image Processing using 'sharp'
 exports.resizeImage = asyncHandle(async (req, res, next) => {
-  const filename = `category-${uuidv4()}-${Date.now()}.jpeg`;
+  if (!req.file) return next();
+
+  const filename = `category-${slugify(req.body.name, "_")}-${uuidv4()}-${Date.now()}.jpeg`;
   await sharp(req.file.buffer)
     .resize(600, 600)
     .toFormat("jpeg")
     .jpeg({ quality: 90 })
-    .toFile(`uploads/categories/${filename}`);
+    .toFile(`uploads/categories/${filename}`); // save image in disk storage
+
+  req.body.image = filename; // save image name in DB
+
   next();
 });
 
