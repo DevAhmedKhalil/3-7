@@ -23,19 +23,23 @@ const router = express.Router();
 router.use("/:categoryId/subcategories", subCategoryRoute);
 
 //! Routes
-router
-  .route("/")
-  .get(getCategories)
-  .post(
-    uploadCategoryImage,
-    resizeImage,
-    createCategoryValidator,
-    createCategory
-  );
+router.route("/").get(getCategories).post(
+  // Create category
+  uploadCategoryImage,
+  resizeImage,
+  createCategoryValidator,
+  createCategory
+);
 router
   .route("/:id")
   .get(getCategoryValidator, getCategory)
-  .put(updateCategoryValidator, updateCategory)
+  .put(
+    // Update category
+    uploadCategoryImage,
+    resizeImage,
+    updateCategoryValidator,
+    updateCategory
+  )
   .delete(deleteCategoryValidator, deleteCategory);
 
 module.exports = router;

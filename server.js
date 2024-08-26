@@ -1,12 +1,17 @@
+// Core modules
+const path = require("path");
+
+// Third party modules
 const express = require("express");
 const dotenv = require("dotenv");
 const morgan = require("morgan");
 
+// Require modules from project
 dotenv.config({ path: "config.env" });
-const ApiError = require("./utils/ApiError");
+const ApiError = require("./utils/apiError");
 const globalError = require("./middlewares/errorMiddleware");
 const dbConnection = require("./config/database");
-
+// Routes
 const categoryRoute = require("./routes/categoryRoute");
 const subCategoryRoute = require("./routes/subCategoryRoute");
 const brandRoute = require("./routes/brandRoute");
@@ -20,6 +25,7 @@ const app = express();
 
 //! Middlewares
 app.use(express.json()); // Middleware for parsing JSON bodies
+app.use(express.static(path.join(__dirname, "uploads"))); // serve static files in 'uploads'
 
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
