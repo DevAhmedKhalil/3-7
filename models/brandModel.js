@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 
+//! 1- Create Schema
 const brandSchema = new mongoose.Schema(
   {
     name: {
@@ -20,4 +21,23 @@ const brandSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+const setImgURL = (doc) => {
+  //@ return => image base url + image name
+  if (doc.image) {
+    const imageUrl = `${process.env.BASE_URL}/brands/${doc.image}`;
+    doc.image = imageUrl;
+  }
+};
+
+//@ GET [findOne, findAll] and UPDATE
+brandSchema.post("init", (doc) => {
+  setImgURL(doc);
+});
+
+//@ CREATE
+brandSchema.post("save", (doc) => {
+  setImgURL(doc);
+});
+
+//! 2- Create Model
 module.exports = mongoose.model("Brand", brandSchema);

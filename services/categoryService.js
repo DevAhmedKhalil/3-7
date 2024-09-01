@@ -14,7 +14,9 @@ exports.uploadCategoryImage = uploadSingleImage("image");
 exports.resizeImage = asyncHandle(async (req, res, next) => {
   if (!req.file) return next();
 
-  const filename = `category-${slugify(req.body.name, "_").toLowerCase()}-${uuidv4()}-${Date.now()}.jpeg`;
+  const category = await CategoryModel.findById(req.params.id);
+
+  const filename = `category-${slugify(category.name, "_").toLowerCase()}-${uuidv4()}-${Date.now()}.jpeg`;
   await sharp(req.file.buffer)
     .resize(600, 600)
     .toFormat("jpeg")

@@ -3,9 +3,9 @@ const { v4: uuidv4 } = require("uuid");
 const asyncHandle = require("express-async-handler");
 
 const Factory = require("./handlersFactory");
-const { default: slugify } = require("slugify");
 const { uploadSingleImage } = require("../middlewares/uploadImageMiddleware");
 const BrandModel = require("../models/brandModel");
+const { default: slugify } = require("slugify");
 
 //! Upload single image middleware
 exports.uploadBrandImage = uploadSingleImage("image");
@@ -14,7 +14,9 @@ exports.uploadBrandImage = uploadSingleImage("image");
 exports.resizeImage = asyncHandle(async (req, res, next) => {
   if (!req.file) return next();
 
-  const filename = `brand-${slugify(req.body.name, "_").toLowerCase()}-${uuidv4()}-${Date.now()}.jpeg`;
+  const brand = await BrandModel.findById(req.params.id);
+
+  const filename = `brand-${slugify(brand.name, "_").toLowerCase()}-${uuidv4()}-${Date.now()}.jpeg`;
   await sharp(req.file.buffer)
     .resize(600, 600)
     .toFormat("jpeg")
