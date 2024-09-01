@@ -1,45 +1,20 @@
-const multer = require("multer");
 const sharp = require("sharp");
 const { v4: uuidv4 } = require("uuid");
 const asyncHandle = require("express-async-handler");
 
 const Factory = require("./handlersFactory");
-const CategoryModel = require("../models/categoryModel");
-const ApiError = require("../utils/apiError");
 const { default: slugify } = require("slugify");
+const { uploadSingleImage } = require("../middlewares/uploadImageMiddleware");
+const CategoryModel = require("../models/categoryModel");
 
-// //! 1- Disk Storage Engine
-// const multerStorage = multer.diskStorage({
-//   destination: (req, file, cb) => {
-//     cb(null, "uploads/categories");
-//   },
-//   filename: (req, file, cb) => {
-//     const ext = file.mimetype.split("/")[1];
-//     const filename = `category-${uuidv4()}-${Date.now()}.${ext}`;
-//     cb(null, filename);
-//   },
-// });
-
-//! 2- Memory Storage Engine
-const multerStorage = multer.memoryStorage(); // memoryStorage Has Buffer
-
-const multerFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image/")) {
-    cb(null, true);
-  } else {
-    cb(new ApiError("Not an image!", 400), false);
-  }
-};
-
-const upload = multer({ storage: multerStorage, fileFilter: multerFilter });
-
-exports.uploadCategoryImage = upload.single("image");
+//! Upload single image middleware
+exports.uploadCategoryImage = uploadSingleImage("image");
 
 //! Image Processing using 'sharp'
 exports.resizeImage = asyncHandle(async (req, res, next) => {
   if (!req.file) return next();
 
-  const filename = `category-${slugify(req.body.name, "_")}-${uuidv4()}-${Date.now()}.jpeg`;
+  const filename = `category-${slugify(req.body.name, "_").toLowerCase()}-${uuidv4()}-${Date.now()}.jpeg`;
   await sharp(req.file.buffer)
     .resize(600, 600)
     .toFormat("jpeg")
