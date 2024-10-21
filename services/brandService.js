@@ -17,50 +17,26 @@ exports.uploadBrandImage = uploadSingleImage("image");
 exports.resizeImage = asyncHandle(async (req, res, next) => {
   if (!req.file) return next();
 
-  //* Ensure the directory exists
+  // Ensure the directory exists
   const uploadDir = path.join(__dirname, "../uploads/brands");
   if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
   }
 
-  //* Case 1: When creating a new brand (no req.params.id)
-  if (!req.params.id) {
-    if (!req.body.name) {
-      return next(new Error("Brand name is required for image processing."));
-    }
-    // Generate filename using req.body.name
-    const filename = `brand-${slugify(req.body.name, "_").toLowerCase()}-${uuidv4()}-${Date.now()}.jpeg`;
+  // Generate a secure filename
+  const brand = req.params.id ? await BrandModel.findById(req.params.id) : null;
+  const filename = `brand-${slugify(brand ? brand.name : req.body.name, "_").toLowerCase()}-${uuidv4()}-${Date.now()}.jpeg`;
 
-    await sharp(req.file.buffer)
-      .resize(600, 600)
-      .toFormat("jpeg")
-      .jpeg({ quality: 90 })
-      .toFile(path.join(uploadDir, filename)); // save image in disk storage
+  // Process the image with sharp
+  await sharp(req.file.buffer)
+    .resize(600, 600)
+    .toFormat("jpeg")
+    .jpeg({ quality: 90 })
+    .toFile(path.join(uploadDir, filename)); // Save image in disk storage
 
-    req.body.image = filename; // save image name in DB
-    next();
-  }
+  req.body.image = filename; // Save image name in DB
 
-  //* Case 2: When updating an existing brand (use req.params.id)
-  else {
-    const brand = await BrandModel.findById(req.params.id);
-    if (!brand || !brand.name) {
-      return next(
-        new Error("No brand found with this ID or brand has no name.")
-      );
-    }
-    // Generate filename using the brand name from DB
-    const filename = `brand-${slugify(brand.name, "_").toLowerCase()}-${uuidv4()}-${Date.now()}.jpeg`;
-
-    await sharp(req.file.buffer)
-      .resize(600, 600)
-      .toFormat("jpeg")
-      .jpeg({ quality: 90 })
-      .toFile(path.join(uploadDir, filename)); // save image in disk storage
-
-    req.body.image = filename; // save image name in DB
-    next();
-  }
+  next();
 });
 
 // @desc      Get a list of brands

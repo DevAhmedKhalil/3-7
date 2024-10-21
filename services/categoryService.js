@@ -16,43 +16,26 @@ exports.uploadCategoryImage = uploadSingleImage("image");
 exports.resizeImage = asyncHandle(async (req, res, next) => {
   if (!req.file) return next();
 
-  //* Ensure the directory exists
+  // Ensure the directory exists
   const uploadDir = path.join(__dirname, "../uploads/categories");
   if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
   }
 
-  let filename;
+  // Generate a secure filename
+  const category = req.params.id
+    ? await CategoryModel.findById(req.params.id)
+    : null;
+  const filename = `category-${slugify(category ? category.name : req.body.name, "_").toLowerCase()}-${uuidv4()}-${Date.now()}.jpeg`;
 
-  //* Case 1: When creating a new category (no req.params.id)
-  if (!req.params.id) {
-    if (!req.body.name) {
-      return next(new Error("Category name is required for image processing."));
-    }
-    filename = `category-${slugify(req.body.name, "_").toLowerCase()}-${uuidv4()}-${Date.now()}.jpeg`;
-  } else {
-    //* Case 2: When updating an existing category (use req.params.id)
-    const category = await CategoryModel.findById(req.params.id);
-    if (!category || !category.name) {
-      return next(
-        new Error("No category found with this ID or category has no name.")
-      );
-    }
-    filename = `category-${slugify(category.name, "_").toLowerCase()}-${uuidv4()}-${Date.now()}.jpeg`;
-  }
+  // Process the image with sharp
+  await sharp(req.file.buffer)
+    .resize(600, 600)
+    .toFormat("jpeg")
+    .jpeg({ quality: 90 })
+    .toFile(path.join(uploadDir, filename)); // Save image in disk storage
 
-  try {
-    // Process the image with sharp
-    await sharp(req.file.buffer)
-      .resize(600, 600)
-      .toFormat("jpeg")
-      .jpeg({ quality: 90 })
-      .toFile(path.join(uploadDir, filename)); // Save image in disk storage
-
-    req.body.image = filename; // Save image name in DB
-  } catch (error) {
-    return next(new Error("Error processing the image."));
-  }
+  req.body.image = filename; // Save image name in DB
 
   next();
 });
