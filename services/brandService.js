@@ -7,6 +7,9 @@ const { uploadSingleImage } = require("../middlewares/uploadImageMiddleware");
 const BrandModel = require("../models/brandModel");
 const { default: slugify } = require("slugify");
 
+const fs = require("fs");
+const path = require("path");
+
 //! Upload single image middleware
 exports.uploadBrandImage = uploadSingleImage("image");
 
@@ -14,18 +17,50 @@ exports.uploadBrandImage = uploadSingleImage("image");
 exports.resizeImage = asyncHandle(async (req, res, next) => {
   if (!req.file) return next();
 
-  const brand = await BrandModel.findById(req.params.id);
+  //* Ensure the directory exists
+  const uploadDir = path.join(__dirname, "../uploads/brands");
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
 
-  const filename = `brand-${slugify(brand.name, "_").toLowerCase()}-${uuidv4()}-${Date.now()}.jpeg`;
-  await sharp(req.file.buffer)
-    .resize(600, 600)
-    .toFormat("jpeg")
-    .jpeg({ quality: 90 })
-    .toFile(`uploads/categories/${filename}`); // save image in disk storage
+  //* Case 1: When creating a new brand (no req.params.id)
+  if (!req.params.id) {
+    if (!req.body.name) {
+      return next(new Error("Brand name is required for image processing."));
+    }
+    // Generate filename using req.body.name
+    const filename = `brand-${slugify(req.body.name, "_").toLowerCase()}-${uuidv4()}-${Date.now()}.jpeg`;
 
-  req.body.image = filename; // save image name in DB
+    await sharp(req.file.buffer)
+      .resize(600, 600)
+      .toFormat("jpeg")
+      .jpeg({ quality: 90 })
+      .toFile(path.join(uploadDir, filename)); // save image in disk storage
 
-  next();
+    req.body.image = filename; // save image name in DB
+    next();
+  }
+
+  //* Case 2: When updating an existing brand (use req.params.id)
+  else {
+    const brand = await BrandModel.findById(req.params.id);
+    if (!brand || !brand.name) {
+      return next(
+        new Error("No brand found with this ID or brand has no name.")
+      );
+    }
+    // Generate filename using the brand name from DB
+    const filename = `brand-${slugify(brand.name, "_").toLowerCase()}-${uuidv4()}-${Date.now()}.jpeg`;
+
+    await sharp(req.file.buffer)
+      .resize(600, 600)
+      .toFormat("jpeg")
+      .jpeg({ quality: 90 })
+      .toFile(path.join(uploadDir, filename)); // save image in disk storage
+
+    req.body.image = filename; // save image name in DB
+    next();
+  }
 });
 
 // @desc      Get a list of brands

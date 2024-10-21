@@ -1,9 +1,11 @@
+const fs = require("fs");
+const path = require("path");
 const sharp = require("sharp");
 const { v4: uuidv4 } = require("uuid");
 const asyncHandle = require("express-async-handler");
+const { default: slugify } = require("slugify");
 
 const Factory = require("./handlersFactory");
-const { default: slugify } = require("slugify");
 const { uploadSingleImage } = require("../middlewares/uploadImageMiddleware");
 const CategoryModel = require("../models/categoryModel");
 
@@ -14,16 +16,43 @@ exports.uploadCategoryImage = uploadSingleImage("image");
 exports.resizeImage = asyncHandle(async (req, res, next) => {
   if (!req.file) return next();
 
-  const category = await CategoryModel.findById(req.params.id);
+  //* Ensure the directory exists
+  const uploadDir = path.join(__dirname, "../uploads/categories");
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
 
-  const filename = `category-${slugify(category.name, "_").toLowerCase()}-${uuidv4()}-${Date.now()}.jpeg`;
-  await sharp(req.file.buffer)
-    .resize(600, 600)
-    .toFormat("jpeg")
-    .jpeg({ quality: 90 })
-    .toFile(`uploads/categories/${filename}`); // save image in disk storage
+  let filename;
 
-  req.body.image = filename; // save image name in DB
+  //* Case 1: When creating a new category (no req.params.id)
+  if (!req.params.id) {
+    if (!req.body.name) {
+      return next(new Error("Category name is required for image processing."));
+    }
+    filename = `category-${slugify(req.body.name, "_").toLowerCase()}-${uuidv4()}-${Date.now()}.jpeg`;
+  } else {
+    //* Case 2: When updating an existing category (use req.params.id)
+    const category = await CategoryModel.findById(req.params.id);
+    if (!category || !category.name) {
+      return next(
+        new Error("No category found with this ID or category has no name.")
+      );
+    }
+    filename = `category-${slugify(category.name, "_").toLowerCase()}-${uuidv4()}-${Date.now()}.jpeg`;
+  }
+
+  try {
+    // Process the image with sharp
+    await sharp(req.file.buffer)
+      .resize(600, 600)
+      .toFormat("jpeg")
+      .jpeg({ quality: 90 })
+      .toFile(path.join(uploadDir, filename)); // Save image in disk storage
+
+    req.body.image = filename; // Save image name in DB
+  } catch (error) {
+    return next(new Error("Error processing the image."));
+  }
 
   next();
 });
