@@ -2,23 +2,11 @@ const sharp = require("sharp");
 const { v4: uuidv4 } = require("uuid");
 const asyncHandle = require("express-async-handler");
 
-const multer = require("multer");
-const ApiError = require("../utils/apiError");
 const Factory = require("./handlersFactory");
 const ProductModel = require("../models/productModel");
+const { uploadMixOfImages } = require("../middlewares/uploadImageMiddleware");
 
-const multerStorage = multer.memoryStorage(); // memoryStorage Has Buffer
-
-const multerFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image/")) {
-    cb(null, true);
-  } else {
-    cb(new ApiError("Not an image!", 400), false);
-  }
-};
-const upload = multer({ storage: multerStorage, fileFilter: multerFilter });
-
-exports.uploadProductImages = upload.fields([
+exports.uploadProductImages = uploadMixOfImages([
   { name: "imageCover", maxCount: 1 },
   { name: "images", maxCount: 5 },
 ]);
