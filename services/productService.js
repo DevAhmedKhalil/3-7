@@ -1,5 +1,71 @@
+const sharp = require("sharp");
+const { v4: uuidv4 } = require("uuid");
+const asyncHandle = require("express-async-handler");
+
+const multer = require("multer");
+const ApiError = require("../utils/apiError");
 const Factory = require("./handlersFactory");
 const ProductModel = require("../models/productModel");
+
+const multerStorage = multer.memoryStorage(); // memoryStorage Has Buffer
+
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith("image/")) {
+    cb(null, true);
+  } else {
+    cb(new ApiError("Not an image!", 400), false);
+  }
+};
+const upload = multer({ storage: multerStorage, fileFilter: multerFilter });
+
+exports.uploadProductImages = upload.fields([
+  { name: "imageCover", maxCount: 1 },
+  { name: "images", maxCount: 5 },
+]);
+
+//! Image Processing using 'sharp'
+exports.resizeProductImages = asyncHandle(async (req, res, next) => {
+  // console.log("✌️ REQ.FILES = ", req.files);
+
+  //* 1- Image processing for imageCover
+  if (req.files.imageCover) {
+    const imageCoverFileName = `product-${uuidv4()}-${Date.now()}-cover.jpeg`;
+
+    await sharp(req.files.imageCover[0].buffer)
+      .resize(2000, 1333)
+      .toFormat("jpeg")
+      .jpeg({ quality: 95 })
+      .toFile(`uploads/products/${imageCoverFileName}`);
+
+    // Save image into our db
+    req.body.imageCover = imageCoverFileName;
+  }
+
+  //* 2- Image processing for images array
+  if (req.files.images) {
+    req.body.images = [];
+
+    //? map func not return promise it can't wait for loop to finish
+    await Promise.all(
+      req.files.images.map(async (img, index) => {
+        const imageName = `product-${uuidv4()}-${Date.now()}-${index + 1}.jpeg`;
+
+        await sharp(img.buffer)
+          .resize(2000, 1333)
+          .toFormat("jpeg")
+          .jpeg({ quality: 95 })
+          .toFile(`uploads/products/${imageName}`);
+
+        // Save each image into our db
+        req.body.images.push(imageName);
+      })
+    );
+    // console.log(req.body.imageCover);
+    // console.log(req.body.images);
+  }
+
+  next();
+});
 
 // @desc      Get a list of products
 // @route     GET /api/v1/products
