@@ -1,5 +1,6 @@
+const bcrypt = require("bcryptjs");
 const slugify = require("slugify");
-const { check } = require("express-validator");
+const { check, body } = require("express-validator");
 const validatorMiddleware = require("../../middlewares/validatorMiddleware");
 const User = require("../../models/userModel");
 
@@ -70,6 +71,50 @@ exports.updateUserValidator = [
       req.body.slug = slugify(val);
       return true;
     }),
+  validatorMiddleware,
+];
+
+exports.changeUserPasswordValidator = [
+  check("id").isMongoId().withMessage("Invalid ID format."),
+  body("currentPassword")
+    .notEmpty()
+    .withMessage("You must enter your current password."),
+  body("passwordConfirm")
+    .notEmpty()
+    .withMessage("You must enter the password confirmation."),
+  body("password")
+    .notEmpty()
+    .withMessage("You must enter a new password.")
+    .custom(async (val, { req }) => {
+      //? 1) Verify current password
+      const user = await User.findById(req.params.id);
+      if (!user) {
+        throw new Error("User not found with this ID.");
+      }
+      const isCorrectPassword = await bcrypt.compare(
+        req.body.currentPassword,
+        user.password
+      );
+      if (!isCorrectPassword) {
+        throw new Error("Incorrect current password.");
+      }
+
+      //? 2) Verify password confirm
+      if (val !== req.body.passwordConfirm) {
+        throw new Error("Passwords Confirmation Incorrect.");
+      }
+
+      //? 3) Verify current and new password isn't the same
+      if (req.body.currentPassword === req.body.password) {
+        throw new Error(
+          "New password should be different from current password."
+        );
+      }
+
+      return true;
+    }),
+
+  //@ 3) Middleware catches errors
   validatorMiddleware,
 ];
 
