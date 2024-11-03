@@ -1,19 +1,23 @@
+const bcrypt = require("bcryptjs");
 const sharp = require("sharp");
 const { v4: uuidv4 } = require("uuid");
-const asyncHandle = require("express-async-handler");
+const asyncHandler = require("express-async-handler");
+
 const { default: slugify } = require("slugify");
 const fs = require("fs");
 const path = require("path");
 
 const Factory = require("./handlersFactory");
+const ApiError = require("../utils/apiError");
 const { uploadSingleImage } = require("../middlewares/uploadImageMiddleware");
 const UserModel = require("../models/userModel");
+const User = require("../models/userModel");
 
 //! Upload single image middleware
 exports.uploadUserImage = uploadSingleImage("profileImg");
 
 //! Image Processing using 'sharp'
-exports.resizeImage = asyncHandle(async (req, res, next) => {
+exports.resizeImage = asyncHandler(async (req, res, next) => {
   if (!req.file) return next();
 
   // Ensure the directory exists
@@ -56,7 +60,53 @@ exports.createUser = Factory.createOne(UserModel);
 // @desc      Update specific user
 // @route     PUT /api/v1/users/:id
 // @access    Private 'admin'
-exports.updateUser = Factory.updateOne(UserModel);
+exports.updateUser = asyncHandler(async (req, res, next) => {
+  // Find category by id and update with data from req.body
+  const document = await User.findByIdAndUpdate(
+    req.params.id,
+    {
+      name: req.body.name,
+      slug: req.body.slug,
+      email: req.body.email,
+      phone: req.body.phone,
+      role: req.body.role,
+      isActive: req.body.isActive,
+      profileImg: req.body.profileImg,
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+
+  if (!document)
+    return next(
+      new ApiError(`No document found with this ID ${req.params.id}`, 404)
+    );
+
+  res.status(200).json({ data: document });
+});
+
+exports.changeUserPassword = asyncHandler(async (req, res, next) => {
+  // Find category by id and update with data from req.body
+  const document = await User.findByIdAndUpdate(
+    req.params.id,
+    {
+      password: await bcrypt.hash(req.body.password, 12),
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+
+  if (!document)
+    return next(
+      new ApiError(`No document found with this ID ${req.params.id}`, 404)
+    );
+
+  res.status(200).json({ data: document });
+});
 
 // @desc      Delete specific user
 // @route     DELETE /api/v1/users/:id
