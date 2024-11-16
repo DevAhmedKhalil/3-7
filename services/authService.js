@@ -1,3 +1,4 @@
+const jwt = require("jsonwebtoken");
 const asyncHandler = require("express-async-handler");
 
 const ApiError = require("../utils/apiError");
@@ -12,4 +13,12 @@ exports.signup = asyncHandler(async (req, res, next) => {
   });
 
   // 2- Generate token
+  const token = jwt.sign({ userId: User._id }, process.env.JWT_SECRET_KEY, {
+    expiresIn: process.env.JWT_EXPIRE_TIME,
+  });
+
+  res.status(201).json({
+    data: user,
+    token,
+  });
 });
