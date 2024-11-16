@@ -16,7 +16,6 @@ exports.createUserValidator = [
       req.body.slug = slugify(val);
       return true;
     }),
-
   check("email")
     .notEmpty()
     .withMessage("Email is required.")
@@ -29,13 +28,11 @@ exports.createUserValidator = [
         }
       })
     ),
-
   check("password")
     .notEmpty()
     .withMessage("Password is required.")
     .isLength({ min: 6 })
     .withMessage("Password must be at least 6 characters."),
-
   check("passwordConfirm")
     .notEmpty()
     .withMessage("Password Confirm is required.")
@@ -45,14 +42,13 @@ exports.createUserValidator = [
       }
       return true;
     }),
-
   check("phone")
     .optional()
     .isMobilePhone(["ar-EG", "ar-SA"])
     .withMessage("Invalid phone number only accepted Egy and SA numbers."),
 
   check("profileImg").optional(),
-
+  check("role").optional(),
   validatorMiddleware,
 ];
 
@@ -71,6 +67,24 @@ exports.updateUserValidator = [
       req.body.slug = slugify(val);
       return true;
     }),
+  check("email")
+    .notEmpty()
+    .withMessage("Email is required.")
+    .isEmail()
+    .withMessage("Invalid email address.")
+    .custom((val) =>
+      User.findOne({ email: val }).then((user) => {
+        if (user) {
+          return Promise.reject(new Error("Email already in user."));
+        }
+      })
+    ),
+  check("phone")
+    .optional()
+    .isMobilePhone(["ar-EG", "ar-SA"])
+    .withMessage("Invalid phone number only accepted Egy and SA numbers."),
+  check("profileImg").optional(),
+  check("role").optional(),
   validatorMiddleware,
 ];
 
