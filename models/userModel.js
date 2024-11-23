@@ -35,6 +35,7 @@ const userSchema = new mongoose.Schema(
       minlength: [8, "Password should not be less than 8 characters."],
       // select: false, //Is used to exclude this field from being returned in query results by default
     },
+    passwordChangedAt: Date,
     role: {
       type: String,
       enum: ["user", "admin"],

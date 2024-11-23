@@ -11,6 +11,9 @@ const createToken = (payload) =>
     expiresIn: process.env.JWT_EXPIRE_TIME || "7d",
   });
 
+// @desc Signup
+// @route POST /api/v1/auth/signup
+// @access Public
 exports.signup = asyncHandler(async (req, res, next) => {
   // 1- Create user
   const user = await User.create({
@@ -28,6 +31,9 @@ exports.signup = asyncHandler(async (req, res, next) => {
   });
 });
 
+// @desc Login
+// @route POST /api/v1/auth/login
+// @access Public
 exports.login = asyncHandler(async (req, res, next) => {
   // 1- Check if password & email in the body (validation layer)
   // 2- Check if user exist & Check if password is correct
@@ -42,4 +48,56 @@ exports.login = asyncHandler(async (req, res, next) => {
 
   // 4- Send response to client side
   res.status(200).json({ data: user, token });
+});
+
+exports.protect = asyncHandler(async (req, res, next) => {
+  // console.log(req.headers);
+
+  // 1- Check if token exists & Hold token
+  let token;
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
+    token = req.headers.authorization.split(" ")[1];
+    console.log(token);
+  }
+  if (!token) {
+    return next(
+      new ApiError("You are not logged in! Please log in to access.", 401)
+    );
+  }
+
+  // 2- Verify token (no change happens, expired token)
+  const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+  console.log(decoded);
+
+  // 3- Check if user exist
+  const currentUser = await User.findById(decoded.userId);
+  if (!currentUser) {
+    return next(new ApiError("User no longer exists!", 401));
+  }
+
+  // 4- Check if user change his password after token created
+  if (currentUser.passwordChangedAt) {
+    // console.log(currentUser.passwordChangedAt, decoded.password);
+
+    const passwordChangedTimestamp = parseInt(
+      currentUser.passwordChangedAt.getTime() / 1000,
+      10
+    );
+
+    // Password changed after token created (ERROR)
+    if (passwordChangedTimestamp > decoded.iat) {
+      return next(
+        new ApiError(
+          "User recently changed password! Please log in again.",
+          401
+        )
+      );
+    }
+  }
+
+  req.user = currentUser;
+  next();
 });
