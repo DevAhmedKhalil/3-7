@@ -18,7 +18,7 @@ const {
 
 const subCategoryRoute = require("./subCategoryRoute");
 
-const AuthServices = require("../services/authService");
+const authServices = require("../services/authService");
 
 const router = express.Router();
 
@@ -27,7 +27,8 @@ router.use("/:categoryId/subcategories", subCategoryRoute);
 //! Routes
 router.route("/").get(getCategories).post(
   // Create category
-  AuthServices.protect,
+  authServices.protect,
+  authServices.allowedTo("admin", "manager"),
   uploadCategoryImage,
   resizeImage,
   createCategoryValidator,

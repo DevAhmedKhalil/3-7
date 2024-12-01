@@ -50,6 +50,8 @@ exports.login = asyncHandler(async (req, res, next) => {
   res.status(200).json({ data: user, token });
 });
 
+// @desc Make sure that the user is authenticated (logged in)
+// @ Authentication => Who Are You?
 exports.protect = asyncHandler(async (req, res, next) => {
   // console.log(req.headers);
 
@@ -101,3 +103,16 @@ exports.protect = asyncHandler(async (req, res, next) => {
   req.user = currentUser;
   next();
 });
+
+// ['admin', 'manager']
+exports.allowedTo = (...roles) =>
+  asyncHandler(async (req, res, next) => {
+    // 1) Access roles
+    // 2) Access registered user [req.user.role]
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new ApiError("You are not authorized to access this resource.", 403)
+      );
+    }
+    next();
+  });
