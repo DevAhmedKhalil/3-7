@@ -15,27 +15,38 @@ const {
   resizeProductImages,
 } = require("../services/productService");
 
+const authServices = require("../services/authService");
+
 const router = express.Router();
 
 //! Routes
-router
-  .route("/")
-  .get(getProducts)
-  .post(
-    uploadProductImages,
-    resizeProductImages,
-    createProductValidator,
-    createProduct
-  );
+router.route("/").get(getProducts).post(
+  // Create product
+  authServices.protect,
+  authServices.allowedTo("admin", "manager"),
+  uploadProductImages,
+  resizeProductImages,
+  createProductValidator,
+  createProduct
+);
 router
   .route("/:id")
   .get(getProductValidator, getProduct)
   .put(
+    // Update product
+    authServices.protect,
+    authServices.allowedTo("admin", "manager"),
     uploadProductImages,
     resizeProductImages,
     updateProductValidator,
     updateProduct
   )
-  .delete(deleteProductValidator, deleteProduct);
+  .delete(
+    // Delete product
+    authServices.protect,
+    authServices.allowedTo("admin"),
+    deleteProductValidator,
+    deleteProduct
+  );
 
 module.exports = router;

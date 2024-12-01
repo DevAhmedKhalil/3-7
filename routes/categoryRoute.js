@@ -17,7 +17,6 @@ const {
 } = require("../services/categoryService");
 
 const subCategoryRoute = require("./subCategoryRoute");
-
 const authServices = require("../services/authService");
 
 const router = express.Router();
@@ -39,11 +38,19 @@ router
   .get(getCategoryValidator, getCategory)
   .put(
     // Update category
+    authServices.protect,
+    authServices.allowedTo("admin", "manager"),
     uploadCategoryImage,
     resizeImage,
     updateCategoryValidator,
     updateCategory
   )
-  .delete(deleteCategoryValidator, deleteCategory);
+  .delete(
+    // Delete category
+    authServices.protect,
+    authServices.allowedTo("admin"),
+    deleteCategoryValidator,
+    deleteCategory
+  );
 
 module.exports = router;
