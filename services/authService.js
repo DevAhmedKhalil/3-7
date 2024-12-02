@@ -1,3 +1,5 @@
+const crypto = require("crypto"); // nodejs bult in tool
+
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const asyncHandler = require("express-async-handler");
@@ -104,6 +106,7 @@ exports.protect = asyncHandler(async (req, res, next) => {
   next();
 });
 
+// @ Authorization => User Permissions
 // ['admin', 'manager']
 exports.allowedTo = (...roles) =>
   asyncHandler(async (req, res, next) => {
@@ -116,3 +119,33 @@ exports.allowedTo = (...roles) =>
     }
     next();
   });
+
+// @desc Forgot Password
+// @route POST /api/v1/auth/forgotPassword
+// @access Public
+exports.forgotPassword = asyncHandler(async (req, res, next) => {
+  // 1- Get user by email
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) {
+    return next(
+      new ApiError(`No user found with this email ${req.body.email}`, 404)
+    );
+  }
+
+  // 2- If user exists, Generate Hashed reset random 6 digits and Save it into DB
+  const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+  const hashedResetCode = crypto
+    .createHash("sha256")
+    .update(resetCode)
+    .digest("hex");
+
+  // Save hashed reset code into DB
+  user.passwordResetCode = hashedResetCode;
+  // Reset code valid for 10 minutes
+  user.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+
+  user.passwordResetVerified = false;
+  await user.save();
+
+  // 3- Send reset code to email
+});

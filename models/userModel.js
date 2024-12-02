@@ -36,6 +36,9 @@ const userSchema = new mongoose.Schema(
       // select: false, //Is used to exclude this field from being returned in query results by default
     },
     passwordChangedAt: Date,
+    passwordResetCode: String,
+    passwordResetExpires: Date,
+    passwordResetVerified: Boolean,
     role: {
       type: String,
       enum: ["user", "manager", "admin"],
